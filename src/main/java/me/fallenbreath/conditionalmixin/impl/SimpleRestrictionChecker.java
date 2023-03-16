@@ -6,10 +6,8 @@ import me.fallenbreath.conditionalmixin.api.annotation.Condition;
 import me.fallenbreath.conditionalmixin.api.annotation.Restriction;
 import me.fallenbreath.conditionalmixin.api.mixin.ConditionTester;
 import me.fallenbreath.conditionalmixin.api.mixin.RestrictionCheckFailureCallback;
-import me.fallenbreath.conditionalmixin.api.util.VersionChecker;
-import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.loader.api.ModContainer;
-import net.fabricmc.loader.api.Version;
+import net.minecraftforge.fml.ModList;
+import net.minecraftforge.fml.javafmlmod.FMLModContainer;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AnnotationNode;
@@ -25,30 +23,23 @@ import java.util.Optional;
 /**
  * A restriction checker implementation
  */
-public class SimpleRestrictionChecker implements RestrictionChecker
-{
+public class SimpleRestrictionChecker implements RestrictionChecker {
 	private RestrictionCheckFailureCallback failureCallback = null;
 
 	@Override
-	public boolean checkRestriction(String mixinClassName)
-	{
+	public boolean checkRestriction(String mixinClassName) {
 		AnnotationNode restriction = getRestrictionAnnotation(mixinClassName);
-		if (restriction != null)
-		{
+		if (restriction != null) {
 			List<AnnotationNode> enableConditions = Annotations.getValue(restriction, "require", true);
-			for (Result result : this.checkConditions(mixinClassName, enableConditions))
-			{
-				if (!result.success)
-				{
+			for (Result result : this.checkConditions(mixinClassName, enableConditions)) {
+				if (!result.success) {
 					this.onRestrictionCheckFailure(mixinClassName, result.reason);
 					return false;
 				}
 			}
 			List<AnnotationNode> disableConditions = Annotations.getValue(restriction, "conflict", true);
-			for (Result result : this.checkConditions(mixinClassName, disableConditions))
-			{
-				if (result.success)
-				{
+			for (Result result : this.checkConditions(mixinClassName, disableConditions)) {
+				if (result.success) {
 					this.onRestrictionCheckFailure(mixinClassName, result.reason);
 					return false;
 				}
@@ -58,56 +49,38 @@ public class SimpleRestrictionChecker implements RestrictionChecker
 	}
 
 	@Override
-	public void setFailureCallback(RestrictionCheckFailureCallback failureCallback)
-	{
+	public void setFailureCallback(RestrictionCheckFailureCallback failureCallback) {
 		this.failureCallback = failureCallback;
 	}
 
 	@Nullable
-	private AnnotationNode getRestrictionAnnotation(String className)
-	{
-		try
-		{
+	private AnnotationNode getRestrictionAnnotation(String className) {
+		try {
 			ClassNode classNode = MixinService.getService().getBytecodeProvider().getClassNode(className);
 			return Annotations.getVisible(classNode, Restriction.class);
 		}
-		catch (ClassNotFoundException | IOException e)
-		{
+		catch (ClassNotFoundException | IOException e) {
 			return null;
 		}
 	}
 
-	private List<Result> checkConditions(String mixinClassName, List<AnnotationNode> conditions)
-	{
+	private List<Result> checkConditions(String mixinClassName, List<AnnotationNode> conditions) {
 		List<Result> results = Lists.newArrayList();
-		for (AnnotationNode condition : conditions)
-		{
+		for (AnnotationNode condition : conditions) {
 			Condition.Type type = Annotations.getValue(condition, "type", Condition.Type.class, Condition.Type.MOD);
-			switch (type)
-			{
+			switch (type) {
 				case MOD:
 					String modId = Annotations.getValue(condition, "value");
 					Objects.requireNonNull(modId);
-					Optional<ModContainer> modContainer = FabricLoader.getInstance().getModContainer(modId);
-					if (!modContainer.isPresent())
-					{
+					Optional<FMLModContainer> modContainer = ModList.get().getModObjectById(modId);
+					if (!modContainer.isPresent()) {
 						results.add(new Result(false, String.format("required mod %s not found", modId)));
 						continue;
 					}
-					Version modVersion = modContainer.get().getMetadata().getVersion();
-					List<String> versionPredicates = Lists.newArrayList(Annotations.getValue(condition, "versionPredicates", Lists.newArrayList()));
-					if (!VersionChecker.doesVersionSatisfyPredicate(modVersion, versionPredicates))
-					{
-						results.add(new Result(false, String.format("mod %s@%s does not matches version predicates %s", modId, modVersion.getFriendlyString(), versionPredicates)));
-						continue;
-					}
-					results.add(new Result(true, String.format("conflicted/unsupported mod %s@%s found", modId, modVersion.getFriendlyString())));
-					break;
 
 				case MIXIN:
 					String requiredMixinClassName = Annotations.getValue(condition, "value");
-					if (!this.checkRestriction(requiredMixinClassName))
-					{
+					if (!this.checkRestriction(requiredMixinClassName)) {
 						results.add(new Result(false, String.format("required mixin class %s disabled", requiredMixinClassName)));
 						continue;
 					}
@@ -117,18 +90,15 @@ public class SimpleRestrictionChecker implements RestrictionChecker
 				case TESTER:
 					Type clazzType = Annotations.getValue(condition, "tester");
 					ConditionTester tester;
-					try
-					{
+					try {
 						Class<?> clazz = Class.forName(clazzType.getClassName());
-						if (clazz.isInterface())
-						{
+						if (clazz.isInterface()) {
 							ConditionalMixinMod.LOGGER.error("Tester class {} is a interface, but it should be a class", clazz.getName());
 							continue;
 						}
 						tester = (ConditionTester)clazz.getConstructor().newInstance();
 					}
-					catch (Exception e)
-					{
+					catch (Exception e) {
 						ConditionalMixinMod.LOGGER.error("Failed to instantiate a ConditionTester from class {}: {}", clazzType.getClassName(), e);
 						continue;
 					}
@@ -140,21 +110,17 @@ public class SimpleRestrictionChecker implements RestrictionChecker
 		return results;
 	}
 
-	private void onRestrictionCheckFailure(String mixinClassName, String reason)
-	{
-		if (this.failureCallback != null)
-		{
+	private void onRestrictionCheckFailure(String mixinClassName, String reason) {
+		if (this.failureCallback != null) {
 			this.failureCallback.callback(mixinClassName, reason);
 		}
 	}
 
-	private static class Result
-	{
+	private static class Result {
 		public final boolean success;
 		public final String reason;
 
-		private Result(boolean success, String reason)
-		{
+		private Result(boolean success, String reason) {
 			this.success = success;
 			this.reason = reason;
 		}

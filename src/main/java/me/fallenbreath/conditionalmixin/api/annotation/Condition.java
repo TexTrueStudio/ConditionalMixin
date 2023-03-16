@@ -6,8 +6,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Condition
-{
+public @interface Condition {
 	Type type() default Type.MOD;
 
 	/**
@@ -31,8 +30,7 @@ public @interface Condition
 	 */
 	Class<? extends ConditionTester> tester() default ConditionTester.class;
 
-	enum Type
-	{
+	enum Type {
 		MOD,
 		MIXIN,
 		TESTER,

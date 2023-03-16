@@ -1,0 +1,22 @@
+modLoader = "javafml"
+loaderVersion = "[25,)"
+license = "LGPLv3"
+
+[[mods]]
+modId = "memoryleakfix"
+version = "${version}"
+displayName = "Conditional Mixin"
+displayURL="https://github.com/TexTrueStudio/ConditionalMixin" #optional
+logoFile="./assets/conditionalmixin/icon.png" #optional
+credits="Fallen_Breath" #optional
+authors="TexTrue, ThinkingStudio" #optional
+description = '''
+Use annotation to conditionally apply your mixins
+'''
+
+[[dependencies.memoryleakfix]]
+modId = "forge"
+mandatory = true
+versionRange = "[25,)"
+ordering = "NONE"
+side = "BOTH"

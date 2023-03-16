@@ -19,46 +19,37 @@ import java.util.List;
  * 2. Mixin applies the mixin merge
  * 3. onPostApply: Reverts the annotation on the target class back to the state before apply
  */
-public class AnnotationCleaner
-{
+public class AnnotationCleaner {
 	private final Class<? extends Annotation> annotationClass;
 
-	public AnnotationCleaner(Class<? extends Annotation> annotationClass)
-	{
+	public AnnotationCleaner(Class<? extends Annotation> annotationClass) {
 		this.annotationClass = annotationClass;
 	}
 
 	@Nullable
 	private AnnotationNode previousRestrictionAnnotation;
 
-	public void onPreApply(ClassNode targetClass)
-	{
+	public void onPreApply(ClassNode targetClass) {
 		this.previousRestrictionAnnotation = Annotations.getVisible(targetClass, this.annotationClass);
 	}
 
-	public void onPostApply(ClassNode targetClass)
-	{
+	public void onPostApply(ClassNode targetClass) {
 		String descriptor = Type.getDescriptor(this.annotationClass);
 		List<AnnotationNode> annotationNodes = targetClass.visibleAnnotations;
-		if (annotationNodes == null)
-		{
+		if (annotationNodes == null) {
 			return;
 		}
 		int index = -1;
-		for (int i = 0; i < annotationNodes.size(); i++)
-		{
-			if (descriptor.equals(annotationNodes.get(i).desc))
-			{
+		for (int i = 0; i < annotationNodes.size(); i++) {
+			if (descriptor.equals(annotationNodes.get(i).desc)) {
 				index = i;
 				break;
 			}
 		}
-		if (this.previousRestrictionAnnotation == null && index != -1)  // @Restriction is merged, drop it
-		{
+		if (this.previousRestrictionAnnotation == null && index != -1) {  // @Restriction is merged, drop it
 			annotationNodes.remove(index);
 		}
-		else if (this.previousRestrictionAnnotation != null)  // preserve the original @Restriction
-		{
+		else if (this.previousRestrictionAnnotation != null) {  // preserve the original @Restriction
 			annotationNodes.set(index, this.previousRestrictionAnnotation);
 		}
 	}

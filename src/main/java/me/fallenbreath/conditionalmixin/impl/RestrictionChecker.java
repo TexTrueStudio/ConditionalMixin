@@ -6,8 +6,7 @@ import me.fallenbreath.conditionalmixin.api.mixin.RestrictionCheckFailureCallbac
 /**
  * A helper class to for checking if {@link Restriction} annotation on a mixin class is satisfied
  */
-public interface RestrictionChecker
-{
+public interface RestrictionChecker {
 	/**
 	 * Check if the {@link Restriction} annotation of the given mixin class is satisfied
 	 * Return true if the mixin class doesn't have the {@link Restriction} annotation
