@@ -1,14 +1,12 @@
-# conditional-mixin
+# ConditionalMixinForged
 
-[![jitpack badge](https://jitpack.io/v/Fallen-Breath/conditional-mixin.svg)](https://jitpack.io/#Fallen-Breath/conditional-mixin)
+A forge library mod for using annotation to conditionally apply your mixins.
 
-A fabric library mod for using annotation to conditionally apply your mixins. Requires fabric-loader >=0.10.4 only
-
-It is available at [jitpack](https://jitpack.io/#Fallen-Breath/conditional-mixin)
+It is available at [jitpack](https://jitpack.io/#TexTrueStudio/ConditionalMixinForged)
 
 ## Example Usages
 
-Import conditional-mixin 
+Import ConditionalMixinForged
 
 ```groovy
 repositories {
@@ -16,10 +14,10 @@ repositories {
 }
 
 dependencies {
-    modImplementation 'com.github.Fallen-Breath:conditional-mixin:v0.3.2'
+    modImplementation 'com.github.TexTrueStudio:ConditionalMixinForged:forge~dev-SNAPSHOT'
 
     // suggested, to bundle it into your mod jar
-    include "com.github.Fallen-Breath:conditional-mixin:v0.3.2"
+    include "com.github.TexTrueStudio:ConditionalMixinForged:forge~dev-SNAPSHOT"
 }
 ```
 
