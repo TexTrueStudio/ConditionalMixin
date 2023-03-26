@@ -16,12 +16,11 @@ public class ConditionalMixinMod {
 
 	public ConditionalMixinMod() {
 		IEventBus MOD_BUS = FMLJavaModLoadingContext.get().getModEventBus();
-
 		MOD_BUS.addListener(this::onInitialize);
-
 		MinecraftForge.EVENT_BUS.register(this);
 	}
 
 	public void onInitialize(final FMLCommonSetupEvent event) {
+
 	}
 }
